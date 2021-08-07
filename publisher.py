@@ -1,8 +1,10 @@
 import time
-
+from PIL import Image
 from pydust import core
 
 import pickle
+
+
 def main():
     # initialises the core with the given block name and the directory where the modules are located (default "./modules")
     dust = core.Core("classify_pub", "./modules")
@@ -20,13 +22,14 @@ def main():
     dust.connect()
     time.sleep(1)
     # declare a bytes-like payload object
-    with open("demo.jpg", "rb") as image:
-        f = image.read()
-        f=bytearray(f)
+    img = Image.open("kitten.jpg")
+    img_bytes = pickle.dumps(img)
 
-        # publishes the payload to the given channel (as defined by the configuration file)
-    payload = "test".encode("ascii")
-    dust.publish("publish-mqtt", bytes(f))
+    # publishes the payload to the given channel (as defined by the configuration file)
+    i = 0
+    while i < 10:
+        dust.publish("publish-mqtt", img_bytes)
+        i = i+1
 
     time.sleep(1)
 
@@ -35,6 +38,7 @@ def main():
 
     # stops the background thread started by cycleForever() and wait until the thread has finished its tasks before exiting the application
     dust.cycle_stop()
+
 
 if __name__ == "__main__":
     main()

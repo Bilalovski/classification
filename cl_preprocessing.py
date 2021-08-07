@@ -7,11 +7,23 @@ import paho.mqtt.client as paho
 from pydust import core
 from mxnet.gluon.data.vision import transforms
 import pickle
+from PIL import Image
 published=False
+choice = 1
 
 def receive(arg):
-    print("received something")
-    print(arg)
+    img = pickle.loads(arg)
+    if choice == 1:
+        img = mx.ndarray.array(img)
+        img = preprocess(img)
+        img = mx.ndarray.array(img).asnumpy().tolist()
+        data = {'choice': choice, 'data': img}
+        payload = json.dumps(data)
+        client.publish("cl_preprocess_out", payload, qos=0)
+
+    while not published:
+        pass
+
 
 def on_connect(mqtt_client, obj, flags, rc):
     if rc==0:
@@ -24,11 +36,6 @@ def on_publish(client, userdata, mid):
     global published
     published=True
 
-def get_image(path, show=False):
-    img = mx.image.imread(path)
-    if img is None:
-        return None
-    return img
 
 def preprocess(img):
     transform_fn = transforms.Compose([
@@ -45,10 +52,9 @@ def preprocess(img):
 
 broker = "127.0.0.1"
 client = paho.Client("cl_preprocessor")
-client.on_connect=on_connect
-client.on_publish=on_publish
+client.on_connect = on_connect
+client.on_publish = on_publish
 client.connect(broker)
-choice = 1
 client.loop_start()
 
 dust = core.Core("classify_sub", "./modules")
@@ -69,15 +75,3 @@ dust.register_listener("classify_image", receive)
 while True:
     time.sleep(1)
 
-if choice == 1:
-    img_path = 'kitten.jpg'
-    img = get_image(img_path, show=True)
-    img = preprocess(img)
-    print(img.shape)
-    img = mx.ndarray.array(img).asnumpy().tolist()
-    data = {'choice': choice,'data': img}
-    payload = json.dumps(data)
-    client.publish("cl_preprocess_out", payload, qos=0)
-
-while not published:
-    pass

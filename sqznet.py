@@ -5,7 +5,7 @@ from collections import namedtuple
 from mxnet.gluon.data.vision import transforms
 from mxnet.contrib.onnx.onnx2mx.import_model import import_model
 import os
-import onnx
+from PIL import Image
 with open('synset.txt', 'r') as f:
     labels = [l.rstrip() for l in f]
 
@@ -29,7 +29,8 @@ def preprocess(img):
     img = img.expand_dims(axis=0)
     return img
 def predict(path):
-    img = get_image(path, show=True)
+    img = Image.open("kitten.jpg")
+    img = mx.ndarray.array(img)
     img = preprocess(img)
     mod.forward(Batch([img]))
     # Take softmax to generate probabilities

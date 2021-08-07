@@ -21,6 +21,14 @@
             "topic": "input",
             "qos": 0
           }
+        },
+        "pub_postProcess": {
+                "_template": "example-template",
+                "transport": {
+                  "publish": true,
+                  "topic": "output",
+                  "qos": 0
+          }
         }
       }
     }
@@ -33,6 +41,14 @@
           "transport": {
             "publish": false,
             "topic": "input",
+            "qos": 0
+          }
+        },
+        "check_output": {
+          "_template": "example-template",
+          "transport": {
+            "publish": false,
+            "topic": "output",
             "qos": 0
           }
         }
