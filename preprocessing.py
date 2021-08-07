@@ -1,12 +1,17 @@
-import mxnet as mx
+import time
+
 import numpy as np
-from mxnet.gluon.data.vision import transforms
-
 import json
-
+import mxnet as mx
 import paho.mqtt.client as paho
-
+from pydust import core
+from mxnet.gluon.data.vision import transforms
+import pickle
 published=False
+
+def receive(arg):
+    print("received something")
+    print(arg)
 
 def on_connect(mqtt_client, obj, flags, rc):
     if rc==0:
@@ -45,6 +50,24 @@ client.on_publish=on_publish
 client.connect(broker)
 choice = 1
 client.loop_start()
+
+dust = core.Core("classify_sub", "./modules")
+
+# start a background thread responsible for tasks that shouls always be running in the same thread
+dust.cycle_forever()
+# load the core, this includes reading the libraries in the modules directory to check addons and transports are available
+dust.setup()
+# set the path to the configuration file
+dust.set_configuration_file("configuration.json")
+# connects all channels
+dust.connect()
+time.sleep(1)
+# add a message listener on the subscribe-tcp channel. The callback function takes a bytes-like object as argument containing the payload of the message
+dust.register_listener("classify_image", receive)
+# dust.register_listener("subscribe-mqtt", lambda payload: print("Received payload with %d bytes" % len(payload)))
+
+while True:
+    time.sleep(1)
 
 if choice == 1:
     img_path = 'kitten.jpg'
